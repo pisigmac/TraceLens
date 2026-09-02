@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package tracelens;
+
+service TraceCollector {
+  rpc IngestSpans(SpanBatch) returns (IngestResponse);
+}
+
+message Span {
+  string span_id = 1;
+  string parent_id = 2;
+  string agent_type = 3;
+  string tool_name = 4;
+  string llm_model = 5;
+  uint32 input_tokens = 6;
+  uint32 output_tokens = 7;
+  uint32 latency_ms = 8;
+  string status = 9;
+  string error_message = 10;
+  double cost_usd = 11;
+  string timestamp = 12;
+  string attributes = 13;
+}
+
+message SpanBatch {
+  string trace_id = 1;
+  repeated Span spans = 2;
+}
+
+message IngestResponse {
+  uint32 ingested = 1;
+  string trace_id = 2;
+}
