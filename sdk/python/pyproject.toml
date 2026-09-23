@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tracelens-sdk"
+version = "1.0.0"
+description = "Python client for TraceLens agent-run tracing"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Vikas Budde", email = "vikas.budde@hotmail.com" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "httpx>=0.27.0",
+]
+keywords = ["tracing", "observability", "llm", "agents", "tracelens"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/pisigmac/tracelens"
+Repository = "https://github.com/pisigmac/tracelens"
+Issues = "https://github.com/pisigmac/tracelens/issues"
+
+[tool.setuptools.packages.find]
+include = ["tracelens*"]
+exclude = ["tests*"]

@@ -1,0 +1,55 @@
+# Environment Configuration
+
+## Required
+
+```bash
+# Collector
+COLLECTOR_PORT=8080
+COLLECTOR_GRPC_PORT=50051
+COLLECTOR_BUFFER_MS=100
+COLLECTOR_MAX_SPANS_PER_BATCH=1000
+
+# ClickHouse
+CLICKHOUSE_HOST=localhost
+CLICKHOUSE_PORT=8123
+CLICKHOUSE_DB=tracelens
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=
+
+# Auth
+JWT_SECRET=your-256-bit-secret
+JWT_ISSUER=tracelens
+JWT_AUDIENCE=tracelens-api
+
+# GuardLoop (external)
+GUARDLOOP_ENABLED=true
+GUARDLOOP_ENDPOINT=https://guardloop.internal/api/v1
+GUARDLOOP_API_KEY=
+GUARDLOOP_TIMEOUT_MS=5000
+
+# Storage Tiers
+HOT_RETENTION_DAYS=7
+WARM_RETENTION_DAYS=30
+COLD_STORAGE_BUCKET=s3://tracelens-cold
+
+# Alerting
+ALERT_WEBHOOK_URL=https://hooks.slack.com/services/...
+ALERT_ENABLED=true
+```
+
+## Optional
+
+```bash
+# Performance
+COLLECTOR_WORKERS=4
+CLICKHOUSE_MAX_CONCURRENT_QUERIES=100
+
+# Feature Flags
+FEATURE_REPLAY=true
+FEATURE_COST_ATTRIBUTION=true
+FEATURE_ANOMALY_DETECTION=true
+
+# Billing
+STRIPE_API_KEY=
+STRIPE_WEBHOOK_SECRET=
+```

@@ -1,0 +1,242 @@
+openapi: 3.1.0
+info:
+  title: TraceLens API
+  version: 1.0.0
+  description: Distributed tracing for AI agent workflows
+servers:
+  - url: https://api.tracelens.io/v1
+paths:
+  /spans:
+    post:
+      summary: Ingest span batch
+      operationId: ingestSpans
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanBatch'
+      responses:
+        '201':
+          description: Spans ingested
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestResponse'
+        '429':
+          description: Rate limit exceeded
+  /traces/{trace_id}:
+    get:
+      summary: Get full trace
+      operationId: getTrace
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trace_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trace found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trace'
+  /traces/search:
+    get:
+      summary: Search traces
+      operationId: searchTraces
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: agent_type
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [ok, error] }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceSearchResult'
+  /traces/analyze:
+    post:
+      summary: Analyze trace for anomalies
+      operationId: analyzeTrace
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trace_id: { type: string }
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceAnalysis'
+  /traces/{trace_id}/replay:
+    get:
+      summary: Get replay data
+      operationId: getReplay
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trace_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Replay steps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayData'
+  /metrics:
+    get:
+      summary: Aggregated metrics
+      operationId: getMetrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: group_by
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
+  /agents/{agent_type}/performance:
+    get:
+      summary: Agent performance
+      operationId: getAgentPerformance
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: agent_type
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Performance data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentPerformance'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SpanBatch:
+      type: object
+      required: [trace_id, spans]
+      properties:
+        trace_id: { type: string }
+        spans:
+          type: array
+          items: { $ref: '#/components/schemas/Span' }
+    Span:
+      type: object
+      required: [span_id, agent_type, status, timestamp]
+      properties:
+        span_id: { type: string }
+        parent_id: { type: string, nullable: true }
+        agent_type: { type: string }
+        tool_name: { type: string }
+        llm_model: { type: string, nullable: true }
+        input_tokens: { type: integer }
+        output_tokens: { type: integer }
+        latency_ms: { type: integer }
+        status: { type: string, enum: [ok, error] }
+        error_message: { type: string, nullable: true }
+        cost_usd: { type: number, format: float }
+        timestamp: { type: string, format: date-time }
+        attributes: { type: object, nullable: true }
+    IngestResponse:
+      type: object
+      properties:
+        ingested: { type: integer }
+        trace_id: { type: string }
+    Trace:
+      type: object
+      properties:
+        trace_id: { type: string }
+        spans: { type: array, items: { $ref: '#/components/schemas/Span' } }
+        total_cost_usd: { type: number }
+        total_latency_ms: { type: integer }
+        status: { type: string }
+    TraceSearchResult:
+      type: object
+      properties:
+        traces: { type: array, items: { $ref: '#/components/schemas/Trace' } }
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    TraceAnalysis:
+      type: object
+      properties:
+        trace_id: { type: string }
+        anomalies: { type: array }
+        failure_signature: { type: string }
+        guardloop_scores: { type: object }
+    ReplayData:
+      type: object
+      properties:
+        steps: { type: array }
+    Metrics:
+      type: object
+      properties:
+        latency_p50: { type: number }
+        latency_p95: { type: number }
+        latency_p99: { type: number }
+        failure_rate: { type: number }
+        total_cost_usd: { type: number }
+        total_spans: { type: integer }
+    AgentPerformance:
+      type: object
+      properties:
+        agent_type: { type: string }
+        total_traces: { type: integer }
+        avg_latency_ms: { type: number }
+        p99_latency_ms: { type: number }
+        failure_rate: { type: number }
+        avg_cost_per_trace: { type: number }
+        top_failure_signature: { type: string }
